@@ -1,0 +1,112 @@
+<div class="reporting-page">
+  <header class="page-header">
+    <h1>AI-Powered Dynamic Reporting</h1>
+    <p>Select a database, choose tables, describe what you need — get a chart.</p>
+  </header>
+
+  @if (error()) {
+    <div class="alert alert-error" role="alert">
+      {{ error() }}
+    </div>
+  }
+
+  <section class="config-section">
+    <div class="field">
+      <label for="connection">Database connection</label>
+      <select
+        id="connection"
+        [value]="selectedConnectionId()"
+        (change)="onConnectionChange($any($event.target).value)"
+      >
+        <option value="">— Select connection —</option>
+        @for (c of connections(); track c.id) {
+          <option [value]="c.id">{{ c.name }}</option>
+        }
+      </select>
+    </div>
+
+    @if (tables().length > 0) {
+      <div class="field">
+        <label>Tables (select one or more)</label>
+        <div class="table-chips">
+          @for (t of tables(); track t.fullName) {
+            <button
+              type="button"
+              class="chip"
+              [class.selected]="isTableSelected(t.fullName)"
+              (click)="toggleTable(t.fullName)"
+            >
+              {{ t.fullName }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="field">
+      <label for="prompt">What do you want to see? (natural language)</label>
+      <textarea
+        id="prompt"
+        rows="3"
+        placeholder="e.g. Show monthly revenue by city where payment is paid"
+        [value]="prompt()"
+        (input)="prompt.set($any($event.target).value)"
+      ></textarea>
+    </div>
+
+    <div class="actions">
+      <button
+        type="button"
+        class="btn-primary"
+        [disabled]="loading() || !selectedConnectionId() || selectedTableNames().length === 0"
+        (click)="runQuery()"
+      >
+        {{ loading() ? 'Running…' : 'Generate report' }}
+      </button>
+    </div>
+  </section>
+
+  @if (result(); as res) {
+    <section class="result-section">
+      @if (res.generatedSql) {
+        <details class="sql-details">
+          <summary>Generated SQL</summary>
+          <pre class="sql-block">{{ res.generatedSql }}</pre>
+        </details>
+      }
+
+      @if (chartConfig(); as config) {
+        <div class="chart-wrap">
+          <canvas #chartCanvas></canvas>
+        </div>
+      }
+
+      @if (res.data?.length && (res.suggestedChartType === 'table' || !chartConfig())) {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                @for (col of res.columns; track col) {
+                  <th>{{ col }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of res.data; track $index) {
+                <tr>
+                  @for (col of res.columns; track col) {
+                    <td>{{ row[col] }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (res.data?.length === 0) {
+        <p class="no-data">No rows returned.</p>
+      }
+    </section>
+  }
+</div>
