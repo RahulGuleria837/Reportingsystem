@@ -9,7 +9,7 @@ This app implements the flow from your wireframe: **natural language prompt → 
 3. **Enter a natural language prompt** (e.g. “Show monthly revenue by city where payment is paid”).
 4. **Generate report** – the backend either uses **OpenAI** (if configured) to generate T-SQL from your prompt and schema, or runs a safe fallback `SELECT TOP 100 *` from the first table.
 5. **Safe SQL** – only `SELECT` on the chosen tables is allowed; other statements are rejected.
-6. **Chart selection** – the backend suggests **bar**, **line**, **pie**, or **table** from the result shape; the Angular app renders the chart or table.
+6. **Chart selection** – the backend suggests **bar**, **line**, **pie**, or **table** from the result shape; the Angular app renders the chart or table. 
 
 ## Backend (ASP.NET Core)
 
